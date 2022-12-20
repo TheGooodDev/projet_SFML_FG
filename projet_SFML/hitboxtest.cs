@@ -6,16 +6,16 @@ using System.Text;
 
 namespace projet_SFML
 {
-    class Arrow : Projectile
+    class hitboxtest : Projectile
     {
-        private Animation animation;
+
 
         private float scale = 0.5f;
 
 
 
 
-        public Arrow(Vector2f pos, Vector2f[] hitbox, int direction, float movement,EntityType entityType,FullAnimation animation,World world)
+        public hitboxtest(Vector2f pos, Vector2f[] hitbox, int direction, float movement, EntityType entityType, World world)
         {
             this.world = world;
             //SPRITE VALUE
@@ -24,57 +24,33 @@ namespace projet_SFML
             this.direction = direction;
             sprite.Position = pos;
             sprite.Scale = new Vector2f(scale * direction, scale);
+            sprite.Texture = new Texture("sprites/Circle.png");
+            sprite.TextureRect = new IntRect(0, 0, 50, 50);
 
 
             this.entityType = entityType;
 
-            animation.ApplyToSprite(sprite);
+
             this.hitbox = new Hitbox(hitbox, sprite);
 
             this.speed = 1f;
 
             this.movement = movement;
 
-            this.animation = animation;
-
         }
-
 
         public override void Update(RenderWindow renderWindow, float dt)
         {
-
-            decreaseSpeed();
-
             Move();
 
-            this.hitbox.setHitbox() ;
+            this.hitbox.setHitbox();
             renderWindow.Draw(this.hitbox.hitbox);
-           
 
-
-            animation.Start(sprite, dt);
-
-            if (movement < 10)
-            {
-                vel.Y += world.gravity;
-            }
             outOfBound(renderWindow, world.floor);
 
 
             sprite.Position = pos;
             sprite.Origin = new Vector2f(sprite.GetLocalBounds().Width / 2, sprite.GetLocalBounds().Height / 2);
-        }
-
-        public void decreaseSpeed()
-        {
-            if (this.movement < 0)
-            {
-                this.movement = 0;
-            }
-            else
-            {
-                this.movement -= 0.1f;
-            }
         }
     }
 }

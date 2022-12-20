@@ -13,8 +13,11 @@ namespace projet_SFML
 
     abstract class GameObject
     {
+        public World world;
+
         public Vector2f pos;
-        public VertexArray hitbox;
+        public Hitbox hitbox;
+
         public bool deleted = false;
         public float speed;
         public Sprite sprite;
@@ -24,39 +27,28 @@ namespace projet_SFML
 
         public bool isColliding(GameObject entity)
         {
+            for(uint i = 0; i < entity.hitbox.hitbox.VertexCount;i++)
+            {
+                if(this.hitbox.isInside((int)entity.hitbox.hitbox.VertexCount-1, entity.hitbox.hitbox[i].Position))
+                {
+                    return true;
+                }
+                
+            }
             return false;
         }
 
-        public void createHitbox(Vector2f[] allPoint)
-        {
-            hitbox = new VertexArray(PrimitiveType.LineStrip, (uint)allPoint.Length);
-            for (uint i = 0; i < allPoint.Length; i++)
-            {
-                allPoint[i].X = sprite.Position.X + allPoint[i].X * sprite.Scale.X;
-                allPoint[i].Y = sprite.Position.Y + allPoint[i].Y * sprite.Scale.Y;
-                hitbox[i] = new Vertex(allPoint[i],Color.Red);
-            }
-            hitbox.Append(new Vertex(allPoint[0], Color.Red));
 
-        }
 
-        public void setHitbox(Vector2f pos)
-        {
-            for (uint i = 0; i < hitbox.VertexCount; i++)
-            {
-                Vertex v = this.hitbox[i];
-                v.Position.X += vel.X * speed;
-                v.Position.Y += vel.Y * speed;
-                this.hitbox[i] = v;
-            }
 
-        }
 
         public void Delete(){
             
         }
 
-        abstract public void Update(RenderWindow renderWindow, float dt, float gravity, float floor);
+
+
+        abstract public void Update(RenderWindow renderWindow, float dt);
 
         abstract public void outOfBound(RenderWindow renderWindow, float floor);
     }

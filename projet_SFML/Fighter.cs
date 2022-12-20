@@ -28,7 +28,6 @@ namespace projet_SFML
     {
 
         public float health;
-        private float gravity;
         public bool on_animation = false;
 
         private State fighterState = State.GROUND;
@@ -37,12 +36,11 @@ namespace projet_SFML
         private AnimationStateIndex animationstateindex = AnimationStateIndex.IDLE;
         private Animation[] animations = new Animation[Enum.GetNames(typeof(AnimationStateIndex)).Length];
 
-
-        
         public float jumpHeight;
 
-        public Fighter(Vector2f pos,Vector2f[] hitbox,int jumpHeight, EntityType entityType,Animation[] animations)
-        {
+        public Fighter(Vector2f pos,Vector2f[] hitbox,int jumpHeight, EntityType entityType,Animation[] animations, World world)
+        { 
+            this.world = world;
             this.speed = 7f;
             this.entityType = entityType;
 
@@ -52,23 +50,66 @@ namespace projet_SFML
             sprite.Position = pos;
             this.jumpHeight = jumpHeight;
 
-            createHitbox(hitbox);
+            animations[0].ApplyToSprite(sprite);
+            this.hitbox = new Hitbox(hitbox, sprite);
             for (int i = 0; i < animations.Length; i++)
             {
                 this.animations[i] = animations[i];
             }
+            sprite.Origin = new Vector2f(sprite.GetLocalBounds().Width / 2, sprite.GetLocalBounds().Height / 2);
+        }
+
+
+        // MAIN LOOP
+
+        public override void Update(RenderWindow renderWindow, float dt)
+        {
+            if (!on_animation)
+            {
+                HandleInput();
+            }
+            Animate(dt);
+            handleGravity();
+            isFloor(world.floor);
+
+            pos += vel * speed;
+
+            outOfBound(renderWindow, world.floor);
+
+            this.hitbox.setHitbox();
+    
+
+
+
+
+  
+            checkFallCondition(renderWindow);
+
+            renderWindow.Draw(this.hitbox.hitbox);
+
+
+            // SET ORIGIN TO CENTER
+            sprite.Position = pos;
+
 
         }
 
+
+
+        // CHECK POSITION
+
+
         private bool isFloor(float floor)
         {
-            if(pos.Y > floor)
+            if (pos.Y > floor)
             {
+
                 fighterState = State.GROUND;
                 pos.Y = floor;
                 vel.Y = 0;
                 return true;
-            }else
+            }
+            else
             {
                 return false;
             }
@@ -80,14 +121,17 @@ namespace projet_SFML
             if(pos.Y < 0 + sprite.TextureRect.Height / 2)
             {
                 pos.Y = 0 + sprite.TextureRect.Height / 2;
+                vel.Y = 0;
             }
             if(pos.X < 0 + sprite.TextureRect.Width / 2)
             {
                 pos.X = 0 + sprite.TextureRect.Width / 2;
+                vel.X = 0;
             }
             if(pos.X > renderWindow.Size.X - sprite.TextureRect.Width / 2)
             {
                 pos.X = renderWindow.Size.X - sprite.TextureRect.Width/2 ;
+                vel.X = 0;
             }
             else if (pos.Y > floor)
             {
@@ -106,45 +150,16 @@ namespace projet_SFML
             }
         }
 
-        public override void Update(RenderWindow renderWindow, float dt, float gravity,float floor)
-        {
-            this.gravity = gravity;
-            if (!on_animation)
-            {
-                HandleInput();
-            }
-            Animate(dt);
-
-            isFloor(floor);
-            handleGravity();
-
-            pos += vel * speed;
-            setHitbox(pos);
-
-            outOfBound(renderWindow,floor) ;
-            checkFallCondition(renderWindow);
 
 
-
-            renderWindow.Draw(hitbox);
-            // SET ORIGIN TO CENTER
-            sprite.Position = pos;
-
-        }
+        // ANIMATION
 
         public void Animate(float dt)
         {
             on_animation = animations[(int)animationstateindex].Start(sprite, dt); 
         }
 
-        public void handleGravity()
-        {
-            if ((fighterState == State.FALL || fighterState == State.JUMP) && !on_animation)
-            {
-                animationstateindex = AnimationStateIndex.JUMP;
-                vel.Y += gravity;
-            }
-        }
+
 
         public void HandleInput()
         {
@@ -249,6 +264,16 @@ namespace projet_SFML
             
         }
 
+        // MOVEMENT
+        public void handleGravity()
+        {
+            if ((fighterState == State.FALL || fighterState == State.JUMP) && !on_animation)
+            {
+                animationstateindex = AnimationStateIndex.JUMP;
+                vel.Y += world.gravity;
+            }
+        }
+
         private void Move(int direction)
         {
             if(fighterState == State.GROUND)
@@ -275,9 +300,7 @@ namespace projet_SFML
 
         private void setStand(Stand stand)
         { 
-
             fighterStand = stand;
-            
         }
 
         private void setIdlePhase()

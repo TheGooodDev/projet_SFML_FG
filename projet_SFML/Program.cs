@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using projet_SFML;
-using SFML;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
@@ -33,10 +29,10 @@ namespace SFML.Net_Test
             //FIGHTER
             world.addObject(new Fighter(new Vector2f(window.Size.X / 2, window.Size.Y - 150),
                 new Vector2f[]{
-                    new Vector2f(0,0),
-                    new Vector2f(50,0),
-                    new Vector2f(50,37),
-                    new Vector2f(0,37)
+                    new Vector2f(15,8),
+                    new Vector2f(32,8),
+                    new Vector2f(32,35),
+                    new Vector2f(15,35)
                 }, 200, EntityType.PLAYER, new Animation[] {
                 new FlatAnimation("IDLE","sprites/hero_sheet.png", 4, 0, 0, 50, 37, 300f),
                 new FlatAnimation("RUN","sprites/hero_sheet.png", 6, 0, 38, 50, 37, 300f),
@@ -46,7 +42,7 @@ namespace SFML.Net_Test
                 new FlatAnimation("CLIMB","sprites/hero_sheet.png", 9, 0, 38*5 -4, 50, 37, 300f),
                 new FullAnimation("ATTACK","sprites/hero_sheet.png", 7, 0, 38*6 -5, 50, 37, 150f),
                 new FlatAnimation("IDLE2","sprites/hero_sheet.png", 4, 0, 38*7 -6, 50, 37, 300f)
-            })) ;
+            },world)) ;
 
 
             // BLACK WINDOW
@@ -58,6 +54,7 @@ namespace SFML.Net_Test
 
             Random rand = new Random();
 
+
            
 
             while (window.IsOpen)
@@ -66,15 +63,16 @@ namespace SFML.Net_Test
                 window.DispatchEvents();
                 if (world.gameObjectThread.Count < 2)
                 {
-                    //new IntRect(56, 112, 160, 48)
-                    world.gameObjectThread.Add(new Arrow(new Vector2f(window.Size.X - 200, 500),
+                    for (int i = 0; i < 1000; i+=50)
+                    {
+                        world.gameObjectThread.Add(new hitboxtest(new Vector2f(window.Size.X - 200, i),
                         new Vector2f[]{
-                            new Vector2f(56,112),
-                            new Vector2f(219,112),
-                            new Vector2f(219,160),
-                            new Vector2f(56,160)
-                        }, -1, 15f, EntityType.PROJECTILE,
-                        new FullAnimation("arrow", "sprites/arrow.png", 3, 0, 0, 300, 262, 300f))); ;
+                                        new Vector2f(0,0),
+                                        new Vector2f(50,0),
+                                        new Vector2f(50,50),
+                                        new Vector2f(0,50)
+                        }, -1, 15f, EntityType.PROJECTILE, world)); ;
+                    }
                 }
      
                 float dt = deltaTimeClock.Restart().AsMilliseconds();
@@ -89,19 +87,18 @@ namespace SFML.Net_Test
 
                 for (int i = world.gameObjectThread.Count -1; i >= 0;i--)
                 {
-                    world.gameObjectThread[i].Update(window, dt, world.gravity,world.floor);
+                    world.gameObjectThread[i].Update(window, dt);
                                                      window.Draw(world.gameObjectThread[i].sprite);
                     if(world.gameObjectThread[i].entityType == EntityType.PLAYER)
                     {
                         for(int l = world.gameObjectThread.Count -1; l >= 0; l--)
                         {
-                            if (world.gameObjectThread[l].entityType == EntityType.PROJECTILE)
+                            if (world.gameObjectThread[l].entityType == EntityType.PROJECTILE )     
                             {
 
                             if (world.gameObjectThread[i].isColliding(world.gameObjectThread[l]))
                             {
-                                Console.WriteLine("Collide");
-                                    world.removeObject(world.gameObjectThread[l]);
+                                world.removeObject(world.gameObjectThread[l]);
                             }
                             }
                         }
